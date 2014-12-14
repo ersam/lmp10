@@ -11,7 +11,7 @@ gsl_intrp: main.o splines.o points.o gsl_intrp.o gaus/libge.a
 	$(CC) -o gsl_intrp main.o splines.o points.o gsl_intrp.o -lgsl -lgslcblas -lm -L gaus -l ge
 
 gsl_approx: main.o splines.o points.o gsl_approx.o gaus/libge.a
-	$(CC) -o gsl_approx main.o splines.o points.o gsl_approx.o -lgsl -lgslcblas -lm -Lgaus -l ge
+	$(CC) -o gsl_approx main.o splines.o points.o gsl_approx.o -lgsl -lgslcblas -lm -L gaus
 
 aproksymator_na_bazie.o: makespl.h points.h gaus/piv_ge_solver.h
 	$(CC) -I gaus -c aproksymator_na_bazie.c

@@ -141,9 +141,9 @@ xfi(double a, double b, int n, int i, FILE *out)
 void
 make_spl(points_t * pts, spline_t * spl)
 {
-	int signum;
-	gsl_matrix *eqs;
+	gsl_matrix *A;
 	gsl_permutation *p;
+	int signum;
 
 	double         *x = pts->x;
 	double         *y = pts->y;
@@ -151,14 +151,15 @@ make_spl(points_t * pts, spline_t * spl)
 	double		b = x[pts->n - 1];
 	int		i, j, k;
 	int		nb = pts->n - 3 > 10 ? 10 : pts->n - 3;
-
   char *nbEnv= getenv( "APPROX_BASE_SIZE" );
 
 	if( nbEnv != NULL && atoi( nbEnv ) > 0 )
 		nb = atoi( nbEnv );
 
-	eqs = gsl_matrix_alloc(nb + 1, nb + 1);
-	p = gsl_permutation_alloc(nb + 1);
+	A = gsl_matrix_alloc(nb+1, nb + 1);
+	p = gsl_permutation_alloc( nb+1 );
+
+	A->size1 = A->size2 = nb+1;
 
 #ifdef DEBUG
 #define TESTBASE 500
@@ -184,22 +185,23 @@ make_spl(points_t * pts, spline_t * spl)
 	for (j = 0; j < nb; j++) {
 		for (i = 0; i < nb; i++)
 			for (k = 0; k < pts->n; k++)
-				gsl_matrix_set(eqs, j, i, fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]));
+				gsl_matrix_set( A, j, i, fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]));
 
 		for (k = 0; k < pts->n; k++)
-			gsl_matrix_set(eqs, j, nb, y[k] * fi(a, b, nb, j, x[k]));
+			gsl_matrix_set( A, j, nb, y[k] * fi(a, b, nb, j, x[k]));
 	}
 
 #ifdef DEBUG
-	gsl_matrix_view_array(eqs, eqs->size1, eqs->size2);
+	gsl_matrix_view_array( A, A->size1, A->size2 );
 #endif
 
-	if ( gsl_linalg_LU_decomp( eqs, p, &signum) ) {
+	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
 		spl->n = 0;
 		return;
 	}
+
 #ifdef DEBUG
-	gsl_matrix_view_array(eqs, eqs->size2);
+	gsl_matrix_view_array( A, A->size1, A->size2 );
 #endif
 
 	if (alloc_spl(spl, nb) == 0) {
@@ -211,7 +213,7 @@ make_spl(points_t * pts, spline_t * spl)
 			spl->f2[i] = 0;
 			spl->f3[i] = 0;
 			for (k = 0; k < nb; k++) {
-				double		ck = gsl_matrix_get(eqs, k, nb);
+				double		ck = gsl_matrix_get( A, k, nb);
 				spl->f[i]  += ck * fi  (a, b, nb, k, xx);
 				spl->f1[i] += ck * dfi (a, b, nb, k, xx);
 				spl->f2[i] += ck * d2fi(a, b, nb, k, xx);
@@ -231,10 +233,10 @@ make_spl(points_t * pts, spline_t * spl)
 			double d3yi= 0;
 			double xi= a + i * dx;
 			for( k= 0; k < nb; k++ ) {
-							yi += gsl_matrix_get(eqs, k, nb) * fi(a, b, nb, k, xi);
-							dyi += gsl_matrix_get(eqs, k, nb) * dfi(a, b, nb, k, xi);
-							d2yi += gsl_matrix_get(eqs, k, nb) * d2fi(a, b, nb, k, xi);
-							d3yi += gsl_matrix_get(eqs, k, nb) * d3fi(a, b, nb, k, xi);
+							yi += gsl_matrix_get(A, k, nb) * fi(a, b, nb, k, xi);
+							dyi += gsl_matrix_get(A, k, nb) * dfi(a, b, nb, k, xi);
+							d2yi += gsl_matrix_get(A, k, nb) * d2fi(a, b, nb, k, xi);
+							d3yi += gsl_matrix_get(A, k, nb) * d3fi(a, b, nb, k, xi);
 			}
 			fprintf(tst, "%g %g %g %g %g\n", xi, yi, dyi, d2yi, d3yi );
 		}
