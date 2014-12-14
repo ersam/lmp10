@@ -156,7 +156,7 @@ make_spl(points_t * pts, spline_t * spl)
 	if( nbEnv != NULL && atoi( nbEnv ) > 0 )
 		nb = atoi( nbEnv );
 
-	A = gsl_matrix_alloc(nb+1, nb + 1);
+	A = gsl_matrix_alloc(nb+1, nb+1);
 	p = gsl_permutation_alloc( nb+1 );
 
 	A->size1 = A->size2 = nb+1;
@@ -192,7 +192,6 @@ make_spl(points_t * pts, spline_t * spl)
 	}
 
 #ifdef DEBUG
-	gsl_matrix_view_array( A, A->size1, A->size2 );
 #endif
 
 	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
@@ -201,7 +200,6 @@ make_spl(points_t * pts, spline_t * spl)
 	}
 
 #ifdef DEBUG
-	gsl_matrix_view_array( A, A->size1, A->size2 );
 #endif
 
 	if (alloc_spl(spl, nb) == 0) {
