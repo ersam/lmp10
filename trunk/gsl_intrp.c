@@ -1,5 +1,7 @@
 #include "makespl.h"
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_permutation.h>
 
 #include <stdio.h>
 
@@ -11,13 +13,14 @@ make_spl (points_t * pts, spline_t * spl)
 	double *x = pts->x;
 	double *y = pts->y;
 
-	gsl_matrix *A = gsl_matrix_alloc( n*3, n*3+1 );
-	gsl_permutation *p = gsl_permutation_calloc( n*3 );
+	gsl_matrix *A = gsl_matrix_alloc( n*3+1, n*3+1 );
+	gsl_permutation *p = gsl_permutation_alloc( n*3+1 );
 
 	int i, signum;
 	
-	A->size1 = n*3;
+	A->size1 = n*3+1;
 	A->size2 = n*3+1;
+		
 
 
 	for( i= 0; i < n; i++ ) {

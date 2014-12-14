@@ -52,7 +52,7 @@ pivot_ge_in_situ_matrix (matrix_t * c)
       xchg_rows (c, piv, k);
     }
     for (i = k + 1; i < rn; i++) {      /* pętla po kolejnych
-                                           wierszach poniżej diagonalii k,k */
+                                          wierszach poniżej diagonalii k,k */
       double d = *(e + i * cn + k) / *(e + k * cn + k);
       for (j = k; j < cn; j++)
         *(e + i * cn + j) -= d * *(e + k * cn + j);
