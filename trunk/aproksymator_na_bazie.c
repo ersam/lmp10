@@ -175,8 +175,11 @@ make_spl(points_t * pts, spline_t * spl)
 
 	for (j = 0; j < nb; j++) {
 		for (i = 0; i < nb; i++)
-			for (k = 0; k < pts->n; k++)
+			for (k = 0; k < pts->n; k++) {
 				add_to_entry_matrix(eqs, j, i, fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]));
+				printf("%g %g", eqs->e[j*nb+i], fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]));
+				getchar();
+			}
 
 		for (k = 0; k < pts->n; k++)
 			add_to_entry_matrix(eqs, j, nb, y[k] * fi(a, b, nb, j, x[k]));
