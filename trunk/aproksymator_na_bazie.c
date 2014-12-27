@@ -18,8 +18,8 @@ fi(double a, double b, int n, int i, double x)
 {
 	double		h = (b - a) / (n - 1);
 	double		h3 = h * h * h;
-	int		hi         [5] = {i - 2, i - 1, i, i + 1, i + 2};
-	double		hx      [5];
+	int		hi[5] = {i - 2, i - 1, i, i + 1, i + 2};
+	double		hx[5];
 	int		j;
 
 	for (j = 0; j < 5; j++)
