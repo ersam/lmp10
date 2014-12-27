@@ -201,25 +201,19 @@ for ( i = 0; i < nb; i++ ) {
 		printf("%g ", A->data[i*nb+j]);
 	printf("\n");
 }
-/*
-#ifdef DEBUG
-	write_matrix(eqs, stdout);
-#endif
-*/
+
 	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
 		spl->n = 0;
 		return;
 	}
+
 	if ( gsl_linalg_LU_solve( A, p, vb, vx ) ) {
 		spl->n = 0;
 		return;
 	}
 
-/*
-#ifdef DEBUG
-	write_matrix(eqs, stdout);
-#endif
-*/for ( i = 0; i < nb; i++ ) {
+
+for ( i = 0; i < nb; i++ ) {
 	for ( j = 0; j < nb; j++ )
 		printf("%g ", A->data[i*nb+j]);
 	printf("\n");
