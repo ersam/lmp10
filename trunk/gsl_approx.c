@@ -1,9 +1,9 @@
 #include "makespl.h"
-#include "piv_ge_solver.h"
 
-#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_permutation.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_linalg.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +22,8 @@ fi(double a, double b, int n, int i, double x)
 {
 	double		h = (b - a) / (n - 1);
 	double		h3 = h * h * h;
-	int		hi         [5] = {i - 2, i - 1, i, i + 1, i + 2};
-	double		hx      [5];
+	int		hi[5] = {i - 2, i - 1, i, i + 1, i + 2};
+	double		hx[5];
 	int		j;
 
 	for (j = 0; j < 5; j++)
@@ -141,9 +141,13 @@ xfi(double a, double b, int n, int i, FILE *out)
 void
 make_spl(points_t * pts, spline_t * spl)
 {
-	gsl_matrix *A;
-	gsl_permutation *p;
+
+	gsl_matrix     *A = NULL;
+	gsl_permutation *p = NULL;
+	gsl_vector	*vb = NULL;
+	gsl_vector	*vx = NULL;
 	int signum;
+	double val;
 
 	double         *x = pts->x;
 	double         *y = pts->y;
@@ -156,10 +160,10 @@ make_spl(points_t * pts, spline_t * spl)
 	if( nbEnv != NULL && atoi( nbEnv ) > 0 )
 		nb = atoi( nbEnv );
 
-	A = gsl_matrix_alloc(nb+1, nb+1);
-	p = gsl_permutation_alloc( nb+1 );
-
-	A->size1 = A->size2 = nb+1;
+	A = gsl_matrix_alloc( nb, nb );
+	p = gsl_permutation_alloc( nb );
+	vb = gsl_vector_alloc( nb );
+	vx = gsl_vector_alloc( nb );
 
 #ifdef DEBUG
 #define TESTBASE 500
@@ -183,25 +187,43 @@ make_spl(points_t * pts, spline_t * spl)
 #endif
 
 	for (j = 0; j < nb; j++) {
-		for (i = 0; i < nb; i++)
-			for (k = 0; k < pts->n; k++)
-				gsl_matrix_set( A, j, i, fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]));
-
+		for (i = 0; i < nb; i++) {
+			val = 0;
+			for (k = 0; k < pts->n; k++) 
+				val += fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]);
+			gsl_matrix_set( A, j, i, val );
+		}
 		for (k = 0; k < pts->n; k++)
-			gsl_matrix_set( A, j, nb, y[k] * fi(a, b, nb, j, x[k]));
+			gsl_vector_set(vb, j, y[k] * fi(a, b, nb, j, x[k]));
 	}
-
+for ( i = 0; i < nb; i++ ) {
+	for ( j = 0; j < nb; j++ )
+		printf("%g ", A->data[i*nb+j]);
+	printf("\n");
+}
+/*
 #ifdef DEBUG
+	write_matrix(eqs, stdout);
 #endif
-
+*/
 	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
 		spl->n = 0;
 		return;
 	}
+	if ( gsl_linalg_LU_solve( A, p, vb, vx ) ) {
+		spl->n = 0;
+		return;
+	}
 
+/*
 #ifdef DEBUG
+	write_matrix(eqs, stdout);
 #endif
-
+*/for ( i = 0; i < nb; i++ ) {
+	for ( j = 0; j < nb; j++ )
+		printf("%g ", A->data[i*nb+j]);
+	printf("\n");
+}
 	if (alloc_spl(spl, nb) == 0) {
 		for (i = 0; i < spl->n; i++) {
 			double xx = spl->x[i] = a + i*(b-a)/(spl->n-1);
@@ -211,7 +233,7 @@ make_spl(points_t * pts, spline_t * spl)
 			spl->f2[i] = 0;
 			spl->f3[i] = 0;
 			for (k = 0; k < nb; k++) {
-				double		ck = gsl_matrix_get( A, k, nb);
+				double		ck = gsl_vector_get(vx, k);
 				spl->f[i]  += ck * fi  (a, b, nb, k, xx);
 				spl->f1[i] += ck * dfi (a, b, nb, k, xx);
 				spl->f2[i] += ck * d2fi(a, b, nb, k, xx);
@@ -231,10 +253,10 @@ make_spl(points_t * pts, spline_t * spl)
 			double d3yi= 0;
 			double xi= a + i * dx;
 			for( k= 0; k < nb; k++ ) {
-							yi += gsl_matrix_get(A, k, nb) * fi(a, b, nb, k, xi);
-							dyi += gsl_matrix_get(A, k, nb) * dfi(a, b, nb, k, xi);
-							d2yi += gsl_matrix_get(A, k, nb) * d2fi(a, b, nb, k, xi);
-							d3yi += gsl_matrix_get(A, k, nb) * d3fi(a, b, nb, k, xi);
+							yi += gsl_vector_get(vx, k) * fi(a, b, nb, k, xi);
+							dyi += gsl_vector_get(vx, k) * dfi(a, b, nb, k, xi);
+							d2yi += gsl_vector_get(vx, k) * d2fi(a, b, nb, k, xi);
+							d3yi += gsl_vector_get(vx, k) * d3fi(a, b, nb, k, xi);
 			}
 			fprintf(tst, "%g %g %g %g %g\n", xi, yi, dyi, d2yi, d3yi );
 		}
