@@ -184,7 +184,7 @@ make_spl(points_t * pts, spline_t * spl)
 
 for ( i = 0; i < nb; i++ ) {
 	for ( j = 0; j < nb; j++ )
-		printf("%g ", eqs->e[i*nb+j]);
+		printf("%g\t", eqs->e[i*nb+j]);
 	printf("\n");
 }
 
@@ -198,14 +198,14 @@ for ( i = 0; i < nb; i++ ) {
 	}
 #ifdef DEBUG
 	write_matrix(eqs, stdout);
-#endif
+#endif/*
 printf("\n");
 for ( i = 0; i < nb; i++ ) {
 	for ( j = 0; j < nb; j++ )
 		printf("%g ", eqs->e[i*nb+j]);
 	printf("\n");
 }
-
+*/
 	if (alloc_spl(spl, nb) == 0) {
 		for (i = 0; i < spl->n; i++) {
 			double xx = spl->x[i] = a + i*(b-a)/(spl->n-1);

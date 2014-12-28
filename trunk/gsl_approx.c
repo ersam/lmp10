@@ -188,19 +188,23 @@ make_spl(points_t * pts, spline_t * spl)
 
 	for (j = 0; j < nb; j++) {
 		for (i = 0; i < nb; i++) {
-			/*val = 0;*/
+			val = 0;
 			for (k = 0; k < pts->n; k++) 
 				val += fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]);
 			gsl_matrix_set( A, j, i, val );
 		}
+		val = 0;
 		for (k = 0; k < pts->n; k++)
-			gsl_vector_set(vb, j, y[k] * fi(a, b, nb, j, x[k]));
+			val += y[k] * fi(a, b, nb, j, x[k]);
+		gsl_vector_set(vb, j, val);
 	}
+/*
 for ( i = 0; i < nb; i++ ) {
 	for ( j = 0; j < nb; j++ )
-		printf("%g ", A->data[i*nb+j]);
+		printf("%g\t", A->data[i*nb+j]);
 	printf("\n");
 }
+*/
 	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
 		spl->n = 0;
 		return;
@@ -210,12 +214,13 @@ for ( i = 0; i < nb; i++ ) {
 		spl->n = 0;
 		return;
 	}
-printf("\n");
+/*printf("\n");
 for ( i = 0; i < nb; i++ ) {
 	for ( j = 0; j < nb; j++ )
 		printf("%g ", A->data[i*nb+j]);
 	printf("\n");
 }
+*/
 	if (alloc_spl(spl, nb) == 0) {
 		for (i = 0; i < spl->n; i++) {
 			double xx = spl->x[i] = a + i*(b-a)/(spl->n-1);
