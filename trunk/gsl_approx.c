@@ -188,7 +188,7 @@ make_spl(points_t * pts, spline_t * spl)
 
 	for (j = 0; j < nb; j++) {
 		for (i = 0; i < nb; i++) {
-			val = 0;
+			/*val = 0;*/
 			for (k = 0; k < pts->n; k++) 
 				val += fi(a, b, nb, i, x[k]) * fi(a, b, nb, j, x[k]);
 			gsl_matrix_set( A, j, i, val );
@@ -201,7 +201,6 @@ for ( i = 0; i < nb; i++ ) {
 		printf("%g ", A->data[i*nb+j]);
 	printf("\n");
 }
-
 	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
 		spl->n = 0;
 		return;
@@ -211,8 +210,7 @@ for ( i = 0; i < nb; i++ ) {
 		spl->n = 0;
 		return;
 	}
-
-
+printf("\n");
 for ( i = 0; i < nb; i++ ) {
 	for ( j = 0; j < nb; j++ )
 		printf("%g ", A->data[i*nb+j]);
