@@ -142,12 +142,12 @@ void
 make_spl(points_t * pts, spline_t * spl)
 {
 
-	gsl_matrix     *A = NULL;
-	gsl_permutation *p = NULL;
-	gsl_vector	*vb = NULL;
-	gsl_vector	*vx = NULL;
-	int signum;
-	double val;
+	gsl_matrix	     *A = NULL;
+	gsl_permutation      *p = NULL;
+	gsl_vector	     *vb = NULL;
+	gsl_vector	     *vx = NULL;
+	int 		     signum;
+	double 		     val;
 
 	double         *x = pts->x;
 	double         *y = pts->y;
@@ -155,7 +155,7 @@ make_spl(points_t * pts, spline_t * spl)
 	double		b = x[pts->n - 1];
 	int		i, j, k;
 	int		nb = pts->n - 3 > 10 ? 10 : pts->n - 3;
-  char *nbEnv= getenv( "APPROX_BASE_SIZE" );
+  	char 		*nbEnv= getenv( "APPROX_BASE_SIZE" );
 
 	if( nbEnv != NULL && atoi( nbEnv ) > 0 )
 		nb = atoi( nbEnv );
@@ -198,13 +198,7 @@ make_spl(points_t * pts, spline_t * spl)
 			val += y[k] * fi(a, b, nb, j, x[k]);
 		gsl_vector_set(vb, j, val);
 	}
-/*
-for ( i = 0; i < nb; i++ ) {
-	for ( j = 0; j < nb; j++ )
-		printf("%g\t", A->data[i*nb+j]);
-	printf("\n");
-}
-*/
+	
 	if ( gsl_linalg_LU_decomp( A, p, &signum ) ) {
 		spl->n = 0;
 		return;
@@ -214,13 +208,7 @@ for ( i = 0; i < nb; i++ ) {
 		spl->n = 0;
 		return;
 	}
-/*printf("\n");
-for ( i = 0; i < nb; i++ ) {
-	for ( j = 0; j < nb; j++ )
-		printf("%g ", A->data[i*nb+j]);
-	printf("\n");
-}
-*/
+
 	if (alloc_spl(spl, nb) == 0) {
 		for (i = 0; i < spl->n; i++) {
 			double xx = spl->x[i] = a + i*(b-a)/(spl->n-1);
@@ -250,15 +238,20 @@ for ( i = 0; i < nb; i++ ) {
 			double d3yi= 0;
 			double xi= a + i * dx;
 			for( k= 0; k < nb; k++ ) {
-							yi += gsl_vector_get(vx, k) * fi(a, b, nb, k, xi);
-							dyi += gsl_vector_get(vx, k) * dfi(a, b, nb, k, xi);
-							d2yi += gsl_vector_get(vx, k) * d2fi(a, b, nb, k, xi);
-							d3yi += gsl_vector_get(vx, k) * d3fi(a, b, nb, k, xi);
+				yi += gsl_vector_get(vx, k) * fi(a, b, nb, k, xi);
+				dyi += gsl_vector_get(vx, k) * dfi(a, b, nb, k, xi);
+				d2yi += gsl_vector_get(vx, k) * d2fi(a, b, nb, k, xi);
+				d3yi += gsl_vector_get(vx, k) * d3fi(a, b, nb, k, xi);
 			}
 			fprintf(tst, "%g %g %g %g %g\n", xi, yi, dyi, d2yi, d3yi );
 		}
 		fclose(tst);
 	}
 #endif
+
+	gsl_matrix_free( A );
+	gsl_permutation_free( p );
+	gsl_vector_free( vb );
+	gsl_vector_free( vx );
 
 }
